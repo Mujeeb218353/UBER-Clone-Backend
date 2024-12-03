@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -9,6 +10,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.static("public"));
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
 
 app.get("/health", (req, res) => {
   res.send("Hello World!");
