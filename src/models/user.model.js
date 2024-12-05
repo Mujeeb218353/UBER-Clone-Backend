@@ -33,7 +33,7 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-      select: false,
+      select: false, // exclude password from response when getting user
     },
     socketId: {
       type: String,

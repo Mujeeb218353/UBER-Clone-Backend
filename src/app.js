@@ -24,4 +24,8 @@ app.use((req, res, next) => {
   next();
 });
 
+import userRouter from "./routers/user.router.js";
+
+app.use("/api/users", userRouter);
+
 export default app;
