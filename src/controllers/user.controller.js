@@ -24,7 +24,7 @@ const registerUser = asyncHandler(async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullName, email, password, phoneNumber } = req.body;
+    const { firstName, lastName, email, password, phoneNumber } = req.body;
 
     const existedUser = await User.findOne({ email });
 
@@ -40,29 +40,33 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const profile = await uploadOnCloudinary(profileLocalPath);
 
-    console.log(profile);
+    // console.log(profile);
 
     if (!profile) {
       throw new apiError(400, "Profile image upload failed");
     }
 
-    const user = await createUser({ 
-        firstName: fullName.firstName, 
-        lastName: fullName.lastName, 
+    const { user, accessToken, refreshToken} = await createUser({ 
+        firstName, 
+        lastName, 
         email, 
         password, 
         profile: profile.secure_url, 
         phoneNumber 
     });
 
+    if (!user || !accessToken || !refreshToken) {
+        throw new apiError(400, "User creation failed");
+    }
+
     res
     .cookie(
         "accessToken", 
-        user.accessToken, 
+        accessToken, 
         cookieOptions
     )
     .cookie("refreshToken", 
-        user.refreshToken, 
+        refreshToken, 
         cookieOptions
     )
     .status(
@@ -73,8 +77,8 @@ const registerUser = asyncHandler(async (req, res) => {
             201, 
             {
                 user,
-                accessToken: user.accessToken,
-                refreshToken: user.refreshToken
+                accessToken,
+                refreshToken
             }, 
             "User created successfully"
         )
