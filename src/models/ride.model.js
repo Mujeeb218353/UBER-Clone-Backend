@@ -48,6 +48,10 @@ const rideSchema = new Schema(
       select: false,
       required: true,
     },
+    refreshToken: {
+      type: String,
+      select: false
+    },
   },
   {
     timestamps: true,

@@ -8,7 +8,7 @@ import {
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import { createUser } from "../services/user.service.js";
 
 const cookieOptions = {

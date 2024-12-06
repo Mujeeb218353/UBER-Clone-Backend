@@ -1,9 +1,9 @@
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
-import { generateAccessAndRefreshToken } from "../services/generate.tokens.service.js";
+import generateAccessAndRefreshToken from "./generate.tokens.service.js";
 
 const createUser = asyncHandler(async ({ firstName, lastName, email, password, profile, phoneNumber }) => {
 

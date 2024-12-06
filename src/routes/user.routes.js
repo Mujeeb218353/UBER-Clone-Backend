@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import { upload } from "../middlewares/multer.middleware.js";
+import upload from "../middlewares/multer.middleware.js";
 
 import {
     registerUser,
