@@ -2,12 +2,19 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import jwt from "jsonwebtoken";
 import { Captain } from "../models/captain.model.js";
+import { BlacklistToken } from "../models/blackListToken.model.js";
 
 const verifyCaptainJWT = asyncHandler(async (req, _, next) => {
   try {
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
+      throw new apiError(401, "Unauthorized request");
+    }
+
+    const isBlacklisted = await BlacklistToken.findOne({ token });
+
+    if (isBlacklisted) {
       throw new apiError(401, "Unauthorized request");
     }
 
