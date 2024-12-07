@@ -10,6 +10,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { createUser } from "../services/user.service.js";
+import generateAccessAndRefreshToken from "../services/generate.tokens.service.js";
+import { BlacklistToken } from "../models/blackListToken.model.js";
 
 const cookieOptions = {
     httpOnly: true,
@@ -21,7 +23,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json(new apiResponse(400, errors.array(), "Validation failed"));
     }
 
     const { firstName, lastName, email, password, phoneNumber } = req.body;
@@ -39,8 +41,6 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const profile = await uploadOnCloudinary(profileLocalPath);
-
-    // console.log(profile);
 
     if (!profile) {
       throw new apiError(400, "Profile image upload failed");
@@ -86,6 +86,134 @@ const registerUser = asyncHandler(async (req, res) => {
 
 });
 
+const loginUser = asyncHandler(async (req, res) => {
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json(new apiResponse(400, errors.array(), "Validation failed"));
+    }
+
+    const { email, password } = req.body;
+
+    if (!email) {
+        throw new apiError(400, "Email is required");
+    }
+    
+    if (!password) {
+        throw new apiError(400, "Password is required");
+    }
+
+    const user = await User.findOne({ email }).select("+password"); // select +password because it is not selected by default
+
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }    
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+    if (!isPasswordCorrect) { 
+        throw new apiError(401, "Username or password is incorrect");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id, User);
+  
+    if (!accessToken || !refreshToken) {
+      throw new apiError(400, "Token generation failed");
+    }
+    
+    res
+    .cookie(
+        "accessToken", 
+        accessToken, 
+        cookieOptions
+    )
+    .cookie(
+        "refreshToken", 
+        refreshToken, 
+        cookieOptions
+
+    )
+    .status(
+        200 
+    )
+    .json(
+        new apiResponse(
+            200, 
+            {
+                user,
+                accessToken,
+                refreshToken
+            }, 
+            "Logged in successfully"
+        )
+    );
+
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      throw new apiError(401, "Unauthorized request");
+    }
+
+    await BlacklistToken.create({ token });
+
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $unset: {
+          refreshToken: 1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if(!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    res
+    .status(
+        200
+    )
+    .clearCookie(
+        "accessToken", 
+        cookieOptions
+    )
+    .clearCookie("refreshToken", 
+        cookieOptions
+    )
+    .json(
+        new apiResponse(
+            200, 
+            null, 
+            "Logged out successfully"
+        )
+    );
+});
+
+const userProfile = asyncHandler(async (req, res) => {
+    res
+    .status(
+        200
+    ).
+    json(
+        new apiResponse(
+            200, 
+            req.user, 
+            "Profile fetched successfully"
+        )
+    );
+});
+
 export {
     registerUser,
+    loginUser,
+    logoutUser,
+    userProfile
 }

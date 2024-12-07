@@ -1,6 +1,7 @@
 import { apiError } from "../utils/apiError.js";
 
 const generateAccessAndRefreshToken = async (entityId, entityModel) => {
+  
     try {
       const entity = await entityModel.findById(entityId);
       
