@@ -1,26 +1,24 @@
 import { User } from "../models/user.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
 import generateAccessAndRefreshToken from "./generate.tokens.service.js";
 
 const createUser = async ({
-  firstName,
-  lastName,
+  fullName,
   email,
   password,
   profile,
   phoneNumber,
 }) => {
-  if (!firstName || !email || !password || !profile || !phoneNumber) {
+  if (!fullName.firstName || !email || !password || !profile || !phoneNumber) {
     throw new apiError(400, "All fields are required");
   }
+  
   try {
     const createdUser = await User.create({
       fullName: {
-        firstName,
-        lastName,
+        firstName: fullName.firstName,
+        lastName: fullName.lastName,
       },
       email,
       password,
@@ -28,7 +26,7 @@ const createUser = async ({
       phoneNumber,
     })
 
-    const user = await User.findById(createdUser._id).select("-password");
+    const user = await User.findById(createdUser._id);
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       user._id,

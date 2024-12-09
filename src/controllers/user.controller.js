@@ -3,11 +3,8 @@ import { apiResponse } from "../utils/apiResponse.js";
 import { apiError } from "../utils/apiError.js";
 import {
     uploadOnCloudinary,
-    deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 import { validationResult } from "express-validator";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { createUser } from "../services/user.service.js";
 import generateAccessAndRefreshToken from "../services/generate.tokens.service.js";
@@ -26,8 +23,8 @@ const registerUser = asyncHandler(async (req, res) => {
         return res.status(400).json(new apiResponse(400, errors.array(), "Validation failed"));
     }
 
-    const { firstName, lastName, email, password, phoneNumber } = req.body;
-
+    const { fullName, email, password, phoneNumber } = req.body;
+    
     const existedUser = await User.findOne({ email });
 
     if (existedUser) {
@@ -46,9 +43,11 @@ const registerUser = asyncHandler(async (req, res) => {
       throw new apiError(400, "Profile image upload failed");
     }
 
-    const { user, accessToken, refreshToken} = await createUser({ 
-        firstName, 
-        lastName, 
+    const { user, accessToken, refreshToken } = await createUser({ 
+        fullName:{
+            firstName: fullName?.firstName, 
+            lastName: fullName?.lastName,
+        }, 
         email, 
         password, 
         profile: profile.secure_url, 
@@ -185,7 +184,8 @@ const logoutUser = asyncHandler(async (req, res) => {
         "accessToken", 
         cookieOptions
     )
-    .clearCookie("refreshToken", 
+    .clearCookie(
+        "refreshToken", 
         cookieOptions
     )
     .json(
@@ -197,7 +197,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     );
 });
 
-const userProfile = asyncHandler(async (req, res) => {
+const getUserProfile = asyncHandler(async (req, res) => {
+
     res
     .status(
         200
@@ -209,11 +210,12 @@ const userProfile = asyncHandler(async (req, res) => {
             "Profile fetched successfully"
         )
     );
+    
 });
 
 export {
     registerUser,
     loginUser,
     logoutUser,
-    userProfile
+    getUserProfile
 }

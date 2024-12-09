@@ -12,7 +12,6 @@ const userSchema = new Schema(
       },
       lastName: {
         type: String,
-        minlength: [3, "Last name must be at least 3 characters long"],
       },
     },
     profile: {
@@ -22,6 +21,8 @@ const userSchema = new Schema(
     phoneNumber: {
       type: String,
       required: true,
+      unique: true,
+      minlength: [3, "Phone number must be at least 10 characters long"]
     },
     email: {
       type: String,

@@ -37,6 +37,8 @@ const captainSchema = new Schema(
     phoneNumber: {
       type: String,
       required: true,
+      unique: true,
+      minlength: [3, "Phone number must be at least 10 characters long"]
     },
     status: {
       type: String,
@@ -72,6 +74,10 @@ const captainSchema = new Schema(
       lng: {
         type: Number,
       },
+    },
+    refreshToken: {
+      type: String,
+      select: false
     },
   },
   {

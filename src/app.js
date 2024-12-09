@@ -13,7 +13,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static("public"));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (req, res) => {
   res.send("Hello World!");
@@ -25,7 +25,9 @@ app.use((req, res, next) => {
 });
 
 import userRouter from "./routes/user.routes.js";
+import captainRouter from "./routes/captain.routes.js";
 
 app.use("/api/users", userRouter);
+app.use("/api/captains", captainRouter);
 
 export default app;
