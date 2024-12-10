@@ -17,8 +17,8 @@ const createUser = async ({
   try {
     const createdUser = await User.create({
       fullName: {
-        firstName: fullName.firstName,
-        lastName: fullName.lastName,
+        firstName: fullName?.firstName,
+        lastName: fullName?.lastName,
       },
       email,
       password,

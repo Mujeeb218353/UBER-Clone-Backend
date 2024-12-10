@@ -120,6 +120,8 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!accessToken || !refreshToken) {
       throw new apiError(400, "Token generation failed");
     }
+
+    user.password = undefined;
     
     res
     .cookie(
